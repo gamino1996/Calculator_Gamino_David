@@ -1,0 +1,133 @@
+#include <iostream>
+#include <string>
+#include <stack>
+#include <cctype>
+#include <cmath>
+#include <stdexcept>
+
+using namespace std;
+
+// Function prototypes below
+string convertPostfix(string);
+
+int findPrecedence(char, char);
+
+bool isOperator(char);
+
+bool isDigit(char);
+
+int calculate(int, int, char);
+
+int evaluatePostString(string postFix){
+    // Inserting data into stack from c++ built in library
+    stack<int> myStack;
+    int stringSize = postFix.length();
+
+    int i, num1, num2, add;
+    char oper;
+    for(i = 0; i < stringSize; i++){
+        if(isDigit(postFix[i])){
+            myStack.push((postFix[i] - '0'));
+        } else {
+            oper = postFix[i];
+            num2 = myStack.top();
+            myStack.pop();
+            num1 = myStack.top();
+            myStack.pop();
+            add = calculate(num1, num2, oper);
+            myStack.push(add);
+        }
+    }
+    return myStack.top();
+}
+
+int calculate(int operand1,int operand2,char oper){
+    if(oper == '+'){
+        return operand1 + operand2;
+    } else if(oper == '-'){
+        return operand1 - operand2;
+    } else if(oper == '*'){
+        return operand1 * operand2;
+    } else if(oper == '/'){
+        return operand1 / operand2;
+    } else if(oper == '^'){
+        return pow((float)operand1, (float)operand2);
+    }else{
+    cout << "ERROR in Calculating" << endl;
+    }
+}
+
+string convertPostfix(string inputString)   {
+    // Inserting data into stack from c++ built in library
+    stack<char> myStack;
+    int sizeOfStr = inputString.length();
+    string postConversion = "";
+
+    for(int i = 0;i< sizeOfStr;i++) {
+         if(isOperator(inputString[i])){
+            while (!myStack.empty() && myStack.top() != '(' && findPrecedence(myStack.top(),inputString[i])){
+                postConversion += myStack.top();
+                myStack.pop();
+            }
+            myStack.push(inputString[i]);
+        } else if(isDigit(inputString[i])){
+            postConversion += inputString[i];
+        } else if (inputString[i] == '(') {
+            myStack.push(inputString[i]);
+        } else if(inputString[i] == ')') {
+            while(!myStack.empty() && myStack.top() !=  '(') {
+                postConversion += myStack.top();
+                myStack.pop();
+            }
+            myStack.pop();
+        }
+    }
+    while(!myStack.empty()) {
+        postConversion += myStack.top();
+        myStack.pop();
+    }
+    return postConversion;
+}
+
+bool isDigit(char ch)   {
+    return (ch >= '0' && ch <= '9');
+}
+
+bool isOperator(char ch) {
+    return (ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '^') ? true: false;
+}
+
+int precedence(char ch)    {
+    switch(ch)    {
+        case '+':
+        case '-':
+            return 1;
+        case '*':
+        case '/':
+            return 2;
+        case '^':
+            return 3;
+        case '(':
+        case ')':
+            return 4;
+        default:
+            return -1;
+    }
+}
+
+int findPrecedence(char op1, char op2)  {
+    return precedence(op1) >= precedence(op2) ? true: false;
+}
+
+int main()  {
+    string myString;
+    cout << "Please provide an expression to evaluate:\n";
+    cin >> myString;
+    string postString = convertPostfix(myString);
+
+    int result = evaluatePostString(postString);
+
+    cout << result << endl;
+
+    return 0;
+}
